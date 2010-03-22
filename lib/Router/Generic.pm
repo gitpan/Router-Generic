@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 sub new
 {
