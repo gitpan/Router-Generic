@@ -1,0 +1,8 @@
+
+0.001_01    2010-03-20
+  - Alpha level - Still under development.
+  - Handles some path declarations and allows specification of default values.
+  - Returns 'match()' results as a parameterized string.
+  - Supports simple route caching.
+
+
