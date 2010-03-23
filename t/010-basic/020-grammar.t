@@ -210,7 +210,96 @@ is(
 );
 
 
+METHODS: {
+  my $router = Router::Generic->new();
+  
+  $router->add_route(
+    name  => 'CreatePage',
+    path  => '/main/:type/create',
+    target  => '/pages/[:type:].create.asp',
+    method  => 'GET'
+  );
+  
+  $router->add_route(
+    name  => 'Create',
+    path  => '/main/:type/create',
+    target  => '/handlers/dev.[:type:].create',
+    method  => 'POST'
+  );
+  
+  $router->add_route(
+    name  => 'View',
+    path  => '/main/:type/{id:\d+}',
+    target  => '/pages/[:type:].view.asp',
+    method  => '*',
+  );
+  
+  $router->add_route(
+    name  => 'List',
+    path  => '/main/:type/list/{page:\d+}',
+    target  => '/pages/[:type:].list.asp',
+    method  => '*',
+    defaults  => { page => 1 }
+  );
+  
+  $router->add_route(
+    name  => 'Delete',
+    path  => '/main/:type/delete/{id:\d+}',
+    target  => '/handlers/dev.[:type:].delete',
+    method  => 'POST'
+  );
+  
+  is(
+    $router->uri_for('CreatePage', { type => 'truck' }) => '/main/truck/create/',
+    "CreatePage uri is correct"
+  );
 
+  is(
+    $router->match('/main/truck/create/') => '/pages/truck.create.asp',
+    "CreatePage is matched properly."
+  );
+  
+  is(
+    $router->uri_for('Create', { type => 'truck' }) => '/main/truck/create/',
+    "Create uri is correct"
+  );
+
+  is(
+    $router->match('/main/truck/create/', 'POST') => '/handlers/dev.truck.create',
+    "Create uri matched correctly"
+  );
+  
+  is(
+    my $view_page = $router->uri_for('View', {type => 'truck', id => 123}) => '/main/truck/123/',
+    "View uri for truck is correct"
+  );
+  
+  is(
+    $router->match($view_page) => '/pages/truck.view.asp?id=123',
+    "View uri matched correctly"
+  );
+  
+  is(
+    my $list_page = $router->uri_for('List', {type => 'truck'}) => '/main/truck/list/1/',
+    "List uri for truck is correct"
+  );
+  
+  is(
+    $router->match($list_page) => '/pages/truck.list.asp?page=1',
+    "List uri matched correctly"
+  );
+  
+  is(
+    my $delete_page = $router->uri_for('Delete', {type => 'truck', id => 123}) => '/main/truck/delete/123/',
+    "Delete uri for truck is correct"
+  );
+  
+  is(
+    $router->match($delete_page) => '/handlers/dev.truck.delete?id=123',
+    "Delete uri matched correctly"
+  );
+  
+};
 
 
 

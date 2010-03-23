@@ -36,7 +36,7 @@ LITERAL_PATH: {
       target    => '/exampleA1.asp',
     );
   };
-  like $@, qr{^path\s+'/path/ExampleA1}, "Paths are unique (A)";
+  like $@, qr{^path\s+'\*\s+/path/ExampleA1}, "Paths are unique (A)";
 };
 
 NAMED_CAPTURE1: {
@@ -53,7 +53,7 @@ NAMED_CAPTURE1: {
       target    => '/exampleB1.asp',
     );
   };
-  like $@, qr{^path\s+'/path/\:ExampleB1}, "Paths are unique (B)";
+  like $@, qr{^path\s+'\*\s+/path/\:ExampleB1}, "Paths are unique (B)";
 };
 
 
@@ -71,7 +71,7 @@ NAMED_CAPTURE2: {
       target    => '/exampleC1.asp',
     );
   };
-  like $@, qr!^path\s+'/path2/\{ExampleC1\}!, "Paths are unique (C1)";
+  like $@, qr!^path\s+'\*\s+/path2/\{ExampleC1\}!, "Paths are unique (C1)";
 
   eval {
     $router->add_route(
@@ -103,6 +103,6 @@ NAMED_WITH_REGEXP: {
       target    => '/fips.asp',
     );
   };
-  like $@, qr!^path\s+'/place/\{reg\:\\d\{3\}\}'\s+conflicts\s+with\s+pre\-existing\s+path\s+'/place/\{reg\:\\d\{3\}\}'!, "Regexp captures are also unique";
+  like $@, qr!^path\s+'\*\s+/place/\{reg\:\\d\{3\}\}'\s+conflicts\s+with\s+pre\-existing\s+path\s+'\*\s+/place/\{reg\:\\d\{3\}\}'!, "Regexp captures are also unique";
 };
 

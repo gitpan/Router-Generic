@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.003';
+our $VERSION = '0.004';
 
 sub new
 {
@@ -16,6 +16,7 @@ sub new
     routes    => [ ],
     patterns  => { },
     names     => { },
+    path_methods  => { },
     %args
   }, $class;
   
@@ -31,29 +32,49 @@ sub add_route
 {
   my ($s, %args) = @_;
   
+  # Set the method:
+  $args{method} ||= '*';
+  $args{method} = uc($args{method});
+  
+  my $uid = "$args{method} $args{path}";
+  my $starUID = "* $args{path}";
+  
   # Validate the args:
-  confess "Required param 'target' was not provided."
-    unless defined($args{target}) && length($args{target});
-  confess "Required param 'name' was not provided."
-    unless defined($args{name}) && length($args{name});
-  confess "name '$args{name}' is already in use by '$s->{names}->{$args{name}}->{path}'."
-    if exists($s->{names}->{$args{name}});
   confess "Required param 'path' was not provided."
     unless defined($args{path}) && length($args{path});
+  
+  confess "Required param 'target' was not provided."
+    unless defined($args{target}) && length($args{target});
+  
+  confess "Required param 'name' was not provided."
+    unless defined($args{name}) && length($args{name});
+  
+  confess "name '$args{name}' is already in use by '$s->{names}->{$args{name}}->{path}'."
+    if exists($s->{names}->{$args{name}});
+  
+  confess "path '$args{method} $args{path}' conflicts with pre-existing path '$s->{paths_methods}->{$uid}->{method} $s->{paths_methods}->{$uid}->{path}'."
+    if exists($s->{paths_methods}->{$uid});
+  
+  confess "name '* $args{name}' is already in use by '$s->{paths_methods}->{$starUID}->{method} $s->{paths_methods}->{$starUID}->{path}'."
+    if exists($s->{paths_methods}->{$starUID});
+  
   
   $args{defaults} ||= { };
   
   # Fixup our pattern:
   ($args{regexp}, $args{captures}, $args{uri_template}) = $s->_patternize( $args{path} );
   
-  if( my $exists = $s->{patterns}->{$args{regexp}} )
+  my $regUID = "$args{method} " . $args{regexp};
+  
+  if( my $exists = $s->{patterns}->{$regUID} )
   {
     confess "path '$args{path}' conflicts with pre-existing path '$exists'.";
   }# end if()
   
   push @{$s->{routes}}, \%args;
-  $s->{patterns}->{$args{regexp}} = $args{path};
+  $s->{patterns}->{$regUID} = $args{path};
   $s->{names}->{$args{name}} = $s->{routes}->[-1];
+  $s->{paths_methods}->{$uid} = $s->{routes}->[-1];
 
   return 1;
 }# end add_route()
@@ -160,37 +181,54 @@ sub _patternize
 # $router->match('/products/all/4/');
 sub match
 {
-  my ($s, $uri) = @_;
+  my ($s, $uri, $method) = @_;
+  
+  $method ||= '*';
+  $method = uc($method);
   
   ($uri) = split /\?/, $uri;
   
-  return $s->{cache}->{$uri}
-    if exists( $s->{cache}->{$uri} );
+  return $s->{cache}->{"$method $uri"}
+    if exists( $s->{cache}->{"$method $uri"} );
   
-  foreach my $route ( @{$s->{routes}} )
+  foreach my $route ( grep { $method eq '*' || $_->{method} eq $method } @{$s->{routes}} )
   {
     if( my @captured = ($uri =~ $route->{regexp}) )
     {
-      my $params = join '&', grep { $_ } map {
+      my $values = { };
+      my $target = $route->{target};
+      
+      map {
         my $value = @captured ? shift(@captured) : $route->{defaults}->{$_};
         $value =~ s/\/$//;
         $value = $route->{defaults}->{$_} unless length($value);
-        urlencode($_) . '=' . urlencode($value)
-          if defined($value);
+        $values->{$_} = $value;
       } @{$route->{captures}};
       
-      if( $route->{target} =~ m/\?/ )
+      map {
+        if( $target =~ s/\[\:\Q$_\E\:\]/$values->{$_}/g )
+        {
+          delete($values->{$_});
+        }# end if()
+      } keys %$values;
+      
+      my $params = join '&', grep { $_ } map {
+        urlencode($_) . '=' . urlencode($values->{$_})
+          if defined($values->{$_});
+      } grep { defined($values->{$_}) } sort {lc($a) cmp lc($b)} keys %$values;
+      
+      if( $target =~ m/\?/ )
       {
-        return $s->{cache}->{$uri} = $route->{target} . ($params ? "&$params" : "" );
+        return $s->{cache}->{"$method $uri"} = $target . ($params ? "&$params" : "" );
       }
       else
       {
-        return $s->{cache}->{$uri} = $route->{target} . ($params ? "?$params" : "" );
+        return $s->{cache}->{"$method $uri"} = $target . ($params ? "?$params" : "" );
       }# end if()
     }# end if()
   }# end foreach()
   
-  return $s->{cache}->{$uri} = undef;
+  return $s->{cache}->{"$method $uri"} = undef;
 }# end match()
 
 
@@ -507,6 +545,46 @@ As of version 0.002 you can't have routes like C</:lang-:locale/:page>
 However you can do this instead: C</:lang/:locale/:page>
 
 This may or may not change in a future version.
+
+=head1 SIMPLE CRUD EXAMPLE
+
+  $router->add_route(
+    name    => 'CreatePage',
+    path    => '/main/:type/create',
+    target  => '/pages/[:type:].create.asp',
+    method  => 'GET'
+  );
+  
+  $router->add_route(
+    name    => 'Create',
+    path    => '/main/:type/create',
+    target  => '/handlers/dev.[:type:].create',
+    method  => 'POST'
+  );
+  
+  $router->add_route(
+    name    => 'View',
+    path    => '/main/:type/{id:\d+}',
+    target  => '/pages/[:type:].view.asp',
+    method  => '*',
+  );
+  
+  $router->add_route(
+    name      => 'List',
+    path      => '/main/:type/list/{page:\d+}',
+    target    => '/pages/[:type:].list.asp',
+    method    => '*',
+    defaults  => { page => 1 }
+  );
+  
+  $router->add_route(
+    name    => 'Delete',
+    path    => '/main/:type/delete/{id:\d+}',
+    target  => '/handlers/dev.[:type:].delete',
+    method  => 'POST'
+  );
+
+This works great with L<ASP4>.
 
 =head1 ACKNOWLEDGEMENTS
 
