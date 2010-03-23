@@ -1,4 +1,7 @@
 
+2010-02-23    v0.005
+  - Route-matching when the route is declared with method '*' and matched with
+    'GET' or 'POST' explicitly would fail.  This is now fixed.
 
 2010-03-23    v0.004
   - Added 'method' parameter to add_route() and match() methods.

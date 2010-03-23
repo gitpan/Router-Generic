@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.004';
+our $VERSION = '0.005';
 
 sub new
 {
@@ -16,7 +16,7 @@ sub new
     routes    => [ ],
     patterns  => { },
     names     => { },
-    path_methods  => { },
+    paths_methods  => { },
     %args
   }, $class;
   
@@ -191,7 +191,7 @@ sub match
   return $s->{cache}->{"$method $uri"}
     if exists( $s->{cache}->{"$method $uri"} );
   
-  foreach my $route ( grep { $method eq '*' || $_->{method} eq $method } @{$s->{routes}} )
+  foreach my $route ( grep { $method eq '*' || $_->{method} eq $method || $_->{method} eq '*' } @{$s->{routes}} )
   {
     if( my @captured = ($uri =~ $route->{regexp}) )
     {
