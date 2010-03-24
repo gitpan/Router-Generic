@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.005';
+our $VERSION = '0.006';
 
 sub new
 {
@@ -195,41 +195,59 @@ sub match
   {
     if( my @captured = ($uri =~ $route->{regexp}) )
     {
-      my $values = { };
-      my $target = $route->{target};
-      
-      map {
-        my $value = @captured ? shift(@captured) : $route->{defaults}->{$_};
-        $value =~ s/\/$//;
-        $value = $route->{defaults}->{$_} unless length($value);
-        $values->{$_} = $value;
-      } @{$route->{captures}};
-      
-      map {
-        if( $target =~ s/\[\:\Q$_\E\:\]/$values->{$_}/g )
-        {
-          delete($values->{$_});
-        }# end if()
-      } keys %$values;
-      
-      my $params = join '&', grep { $_ } map {
-        urlencode($_) . '=' . urlencode($values->{$_})
-          if defined($values->{$_});
-      } grep { defined($values->{$_}) } sort {lc($a) cmp lc($b)} keys %$values;
-      
-      if( $target =~ m/\?/ )
+      if( ref($route->{target}) eq 'ARRAY' )
       {
-        return $s->{cache}->{"$method $uri"} = $target . ($params ? "&$params" : "" );
+        return $s->{cache}->{"$method $uri"} = [
+          map {
+            $s->_prepare_target( $route, $_, @captured )
+          } @{ $route->{target} }
+        ];
       }
       else
       {
-        return $s->{cache}->{"$method $uri"} = $target . ($params ? "?$params" : "" );
+        return $s->{cache}->{"$method $uri"} = $s->_prepare_target( $route, "$route->{target}", @captured );
       }# end if()
     }# end if()
   }# end foreach()
   
   return $s->{cache}->{"$method $uri"} = undef;
 }# end match()
+
+
+sub _prepare_target
+{
+  my ($s, $route, $target, @captured) = @_;
+
+  my $values = { };
+  
+  map {
+    my $value = @captured ? shift(@captured) : $route->{defaults}->{$_};
+    $value =~ s/\/$//;
+    $value = $route->{defaults}->{$_} unless length($value);
+    $values->{$_} = $value;
+  } @{$route->{captures}};
+  
+  map {
+    if( $target =~ s/\[\:\Q$_\E\:\]/$values->{$_}/g )
+    {
+      delete($values->{$_});
+    }# end if()
+  } keys %$values;
+  
+  my $params = join '&', grep { $_ } map {
+    urlencode($_) . '=' . urlencode($values->{$_})
+      if defined($values->{$_});
+  } grep { defined($values->{$_}) } sort {lc($a) cmp lc($b)} keys %$values;
+  
+  if( $target =~ m/\?/ )
+  {
+    return $target . ($params ? "&$params" : "" );
+  }
+  else
+  {
+    return $target . ($params ? "?$params" : "" );
+  }# end if()
+}# end _prepare_target()
 
 
 # $router->uri_for('Zipcodes', { zip => 90210 }) # eg: /Zipcodes/90201/
@@ -369,6 +387,23 @@ Router::Generic - A general-purpose router for the (non-MVC) web.
   );
   
   $router->match('/shop/Ford-F-150/reviews/2/');  # /product-reviews.asp?Product=Ford-F-150&reviewPage=2
+
+=head2 List of Targets
+
+As of version 0.006 you can also pass an arrayref of targets and get them all back, parameterized just the same:
+
+  $router->add_route(
+    name      => "Bank",
+    path      => '/banks/:city',
+    target    => [ '/bank-[:city:].asp', '/bank-generic.asp' ],
+    defaults  => {
+      reviewPage  => 1,
+    }
+  );
+  
+  my $matches = $router->match('/banks/Dallas/');
+  print $matches->[0];  # /bank-Dallas.asp
+  print $matches->[1];  # /bank-generic.asp
 
 =head2 Get the URI for a Route
 

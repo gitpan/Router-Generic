@@ -1,5 +1,9 @@
 
-2010-02-23    v0.005
+2010-03-24    v0.006
+  - If passed an arrayref of targets, match(...) will return an arrayref of targets.
+    (This is useful when you want one as the default, and the other as the fallback.)
+
+2010-03-23    v0.005
   - Route-matching when the route is declared with method '*' and matched with
     'GET' or 'POST' explicitly would fail.  This is now fixed.
 

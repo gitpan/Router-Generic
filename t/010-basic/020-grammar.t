@@ -199,6 +199,12 @@ $router->add_route(
   target    => '/zipcode-hospitals.asp',
 );
 
+$router->add_route(
+  name      => 'Zipcodes3',
+  path      => '/zip/:code/banks/',
+  target    => [ '/zipcode-[:code:].asp', '/zip-[:code:].asp' ],
+);
+
 is(
   $router->match('/zip/90210/') => '/zipcode.asp?code=90210',
   'Plain zipcode',
@@ -208,6 +214,9 @@ is(
   $router->match('/zip/90210/hospitals/') => '/zipcode-hospitals.asp?code=90210',
   'Zipcode with hospitals'
 );
+
+is_deeply
+  [qw( /zipcode-20202.asp /zip-20202.asp )], $router->match('/zip/20202/banks/'), "Matched list of targets";
 
 
 METHODS: {
