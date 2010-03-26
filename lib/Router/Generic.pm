@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.006';
+our $VERSION = '0.007';
 
 sub new
 {
@@ -188,8 +188,17 @@ sub match
   
   ($uri) = split /\?/, $uri;
   
-  return $s->{cache}->{"$method $uri"}
-    if exists( $s->{cache}->{"$method $uri"} );
+  if( exists( $s->{cache}->{"$method $uri"} ) )
+  {
+    if( ref($s->{cache}->{"$method $uri"}) )
+    {
+      return wantarray ? @{ $s->{cache}->{"$method $uri"} } : $s->{cache}->{"$method $uri"};
+    }
+    else
+    {
+      return $s->{cache}->{"$method $uri"};
+    }# end if()
+  }# end if()
   
   foreach my $route ( grep { $method eq '*' || $_->{method} eq $method || $_->{method} eq '*' } @{$s->{routes}} )
   {
@@ -197,11 +206,12 @@ sub match
     {
       if( ref($route->{target}) eq 'ARRAY' )
       {
-        return $s->{cache}->{"$method $uri"} = [
+        $s->{cache}->{"$method $uri"} = [
           map {
             $s->_prepare_target( $route, $_, @captured )
           } @{ $route->{target} }
         ];
+        return wantarray ? @{ $s->{cache}->{"$method $uri"} } : $s->{cache}->{"$method $uri"};
       }
       else
       {
@@ -284,7 +294,7 @@ sub urlencode
 
 =head1 NAME
 
-Router::Generic - A general-purpose router for the (non-MVC) web.
+Router::Generic - A general-purpose router for the web.
 
 =head1 SYNOPSIS
 
@@ -401,9 +411,17 @@ As of version 0.006 you can also pass an arrayref of targets and get them all ba
     }
   );
   
+  # Scalar context returns an arrayref when there are multiple targets:
   my $matches = $router->match('/banks/Dallas/');
   print $matches->[0];  # /bank-Dallas.asp
   print $matches->[1];  # /bank-generic.asp
+  
+  # List context returns a list:
+  my @matches = $router->match('/banks/Dalas/');
+  print $matches[0];    # /bank-Dallas.asp
+  print $matches[1];    # /bank-generic.asp
+
+B<*> This whole contextual-return-types thing started up in v0.007.
 
 =head2 Get the URI for a Route
 

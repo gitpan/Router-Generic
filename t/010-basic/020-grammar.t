@@ -216,8 +216,10 @@ is(
 );
 
 is_deeply
-  [qw( /zipcode-20202.asp /zip-20202.asp )], $router->match('/zip/20202/banks/'), "Matched list of targets";
+  [qw( /zipcode-20202.asp /zip-20202.asp )], scalar( $router->match('/zip/20202/banks/') ), "Matched list of targets in scalar context";
 
+my @matches = $router->match('/zip/20202/banks/');
+is_deeply [qw( /zipcode-20202.asp /zip-20202.asp )], \@matches, "Matched list of targets in list context";
 
 METHODS: {
   my $router = Router::Generic->new();
