@@ -1,4 +1,11 @@
 
+2010-03-26    v0.008
+  - Calling $router->match(...) in list context would sometimes result in an undef
+    return value - which is bad in list context, because of this kind of bug:
+    if( my @matches = $router->match(...) ) {
+      # You always get here even when no match was found:
+    }# end if()
+
 2010-03-26    v0.007
   - When $router->match(...) has multiple matches, it will return a list or arrayref
     depending on the context in which it is called.

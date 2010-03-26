@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.007';
+our $VERSION = '0.008';
 
 sub new
 {
@@ -196,6 +196,7 @@ sub match
     }
     else
     {
+      return unless defined $s->{cache}->{"$method $uri"};
       return $s->{cache}->{"$method $uri"};
     }# end if()
   }# end if()
@@ -220,7 +221,8 @@ sub match
     }# end if()
   }# end foreach()
   
-  return $s->{cache}->{"$method $uri"} = undef;
+  $s->{cache}->{"$method $uri"} = undef;
+  return;
 }# end match()
 
 
