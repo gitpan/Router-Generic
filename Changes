@@ -1,4 +1,9 @@
 
+2010-03-27    v0.009
+  - Now paths like /:lang-:locale/{*Page} will parse the :lang and :locale properly.
+  - Updated POD to reflect this improvement.
+  - Added tests to verify this feature.
+
 2010-03-26    v0.008
   - Calling $router->match(...) in list context would sometimes result in an undef
     return value - which is bad in list context, because of this kind of bug:

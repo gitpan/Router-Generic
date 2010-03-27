@@ -313,5 +313,66 @@ METHODS: {
 };
 
 
+MULTI: {
+  my $router = Router::Generic->new();
+  
+  $router->add_route(
+    name    => 'Colon-Colon',
+    path    => '/:lang-:locale/{*page}',
+    target  => '/[:lang:]/[:locale:]/[:page:].asp',
+    defaults  => {
+      lang    => 'en',
+      locale  => 'us',
+      page    => 'index'
+    }
+  );
+  
+  $router->add_route(
+    name    => 'Curly-Curly',
+    path    => '/wiki/{lang}-{locale}/{*page}',
+    target  => '/[:lang:]/[:locale:]/[:page:].asp',
+    defaults  => {
+      lang    => 'en',
+      locale  => 'us',
+      page    => 'index'
+    }
+  );
+  
+  $router->add_route(
+    name    => 'Colon-Curly',
+    path    => '/wikiA/:lang-{locale}/{*page}',
+    target  => '/[:lang:]/[:locale:]/[:page:].asp',
+    defaults  => {
+      lang    => 'en',
+      locale  => 'us',
+      page    => 'index'
+    }
+  );
+  
+  $router->add_route(
+    name    => 'Curly-Colon',
+    path    => '/wikiB/{lang}-:locale/{*page}',
+    target  => '/[:lang:]/[:locale:]/[:page:].asp',
+    defaults  => {
+      lang    => 'en',
+      locale  => 'us',
+      page    => 'index'
+    }
+  );
+  
+  is( $router->match('/en-us/trucks/') => '/en/us/trucks.asp', "Colon-Colon" );
+  is( $router->uri_for('Colon-Colon') => '/en-us/index/', "uri for Colon-Colon" );
+  
+  is( $router->match('/wiki/en-us/trucks/') => '/en/us/trucks.asp', "Curly-Curly" );
+  is( $router->uri_for('Curly-Curly') => '/wiki/en-us/index/', "uri for Curly-Curly" );
+  
+  is( $router->match('/wikiA/en-us/trucks/') => '/en/us/trucks.asp', "Colon-Curly" );
+  is( $router->uri_for('Colon-Curly') => '/wikiA/en-us/index/', "uri for Colon-Curly" );
+  
+  is( $router->match('/wikiB/en-us/trucks/') => '/en/us/trucks.asp', "Curly-Colon" );
+  is( $router->uri_for('Curly-Colon') => '/wikiB/en-us/index/', "uri for Curly-Colon" );
+};
+
+
 
 

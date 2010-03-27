@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.008';
+our $VERSION = '0.009';
 
 sub new
 {
@@ -92,9 +92,9 @@ sub _patternize
   my $regexp = do {
     (my $copy = $path) =~ s!
       \{(\w+\:(?:\{[0-9,]+\}|[^{}]+)+)\} | # /foo/{Page:\d+}
-      :([^/]+)                           | # /foo/:title
+      :([^/\{\}\:\-]+)                   | # /foo/:title
       \{([^\}]+)\}                       | # /foo/{Bar} and /foo/{*WhateverElse}
-      ([^/]+)                              # /foo/literal/
+      ([^/\{\}\:\-]+)                    # /foo/literal/
     !
       if( $1 )
       {
@@ -138,9 +138,9 @@ sub _patternize
   my $uri_template = do {
     (my $copy = $path) =~ s!
       \{(\w+\:(?:\{[0-9,]+\}|[^{}]+)+)\} | # /foo/{Page:\d+}
-      :([^/]+)                           | # /foo/:title
+      :([^/\{\}\:\-]+)                   | # /foo/:title
       \{([^\}]+)\}                       | # /foo/{Bar} and /foo/{*WhateverElse}
-      ([^/]+)                              # /foo/literal/
+      ([^/\{\}\:\-]+)                    # /foo/literal/
     !
       if( $1 )
       {
@@ -595,11 +595,9 @@ You would get the following results depending on what params you supply:
 
 =head1 LIMITATIONS
 
-As of version 0.002 you can't have routes like C</:lang-:locale/:page>
-
-However you can do this instead: C</:lang/:locale/:page>
-
-This may or may not change in a future version.
+Before version 0.009 there were some limitations in the grammar that prevented
+paths like C</wiki/:lang-:locale/{*Page}> from picking up the C<:lang> and C<:locale>
+correctly.  As of version 0.009 this works correctly.
 
 =head1 SIMPLE CRUD EXAMPLE
 
