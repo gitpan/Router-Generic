@@ -107,4 +107,67 @@ is(
 );
 
 
+BLANK_DEFAULTS: {
+  my $router = Router::Generic->new();
+  
+  $router->add_route(
+    name      => 'Blank',
+    path      => '/path/to/:page',
+    target    => '/page.asp',
+    defaults  => {
+      page  => '',
+    }
+  );
+  
+  is( $router->uri_for('Blank') => '/path/to/' );
+  is( $router->match('/path/to/') => '/page.asp?page=' );
+  
+  $router->add_route(
+    name      => 'Blank2',
+    path      => '/path2/to/:page/',
+    target    => '/page.asp',
+    defaults  => {
+      page  => '',
+    }
+  );
+  
+  is( $router->uri_for('Blank2') => '/path2/to/' );
+  is( $router->match('/path2/to/') => '/page.asp?page=' );
+  
+  $router->add_route(
+    name      => 'Undef',
+    path      => '/path/for/:page',
+    target    => '/page.asp',
+    defaults  => {
+      page  => undef,
+    }
+  );
+  
+  is( $router->uri_for('Undef') => '/path/for/' );
+  is( $router->match('/path/for/') => '/page.asp' );
+  
+  $router->add_route(
+    name      => 'Undef2',
+    path      => '/path2/for/:page/',
+    target    => '/page.asp',
+    defaults  => {
+      page  => undef,
+    }
+  );
+  
+  is( $router->uri_for('Undef2') => '/path2/for/' );
+  is( $router->match('/path2/for/') => '/page.asp' );
+  
+  $router->add_route(
+    name      => 'Undef3',
+    path      => '/path3/for/:page/',
+    target    => '/page.asp',
+  );
+  
+  is( $router->uri_for('Undef3') => '/path3/for/' );
+  is( $router->match('/path3/for/') => '/page.asp' );
+};
+
+
+
 

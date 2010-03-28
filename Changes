@@ -1,4 +1,9 @@
 
+2010-03-27    v0.010
+  - Routes like /trucks/:page with no default :page or with a default :page of undef or ""
+    produced URIs like /trucks/[:page:] or /trucks// - which nobody wants.
+  - New behavior is to produce a URI like /trucks/ instead of /trucks// or /trucks/[:page:].
+
 2010-03-27    v0.009
   - Now paths like /:lang-:locale/{*Page} will parse the :lang and :locale properly.
   - Updated POD to reflect this improvement.
