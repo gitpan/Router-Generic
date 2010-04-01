@@ -1,4 +1,8 @@
 
+2010-03-27    v0.011
+  - Fixed some bugs related to form variables passed in.
+  - Added 'route_for('/path/') method.
+
 2010-03-27    v0.010
   - Routes like /trucks/:page with no default :page or with a default :page of undef or ""
     produced URIs like /trucks/[:page:] or /trucks// - which nobody wants.

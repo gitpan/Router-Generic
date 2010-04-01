@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.010';
+our $VERSION = '0.011';
 
 sub new
 {
@@ -94,7 +94,7 @@ sub _patternize
       \{(\w+\:(?:\{[0-9,]+\}|[^{}]+)+)\} | # /foo/{Page:\d+}
       :([^/\{\}\:\-]+)                   | # /foo/:title
       \{([^\}]+)\}                       | # /foo/{Bar} and /foo/{*WhateverElse}
-      ([^/\{\}\:\-]+)                    # /foo/literal/
+      ([^/\{\}\:\-]+)                      # /foo/literal/
     !
       if( $1 )
       {
@@ -140,7 +140,7 @@ sub _patternize
       \{(\w+\:(?:\{[0-9,]+\}|[^{}]+)+)\} | # /foo/{Page:\d+}
       :([^/\{\}\:\-]+)                   | # /foo/:title
       \{([^\}]+)\}                       | # /foo/{Bar} and /foo/{*WhateverElse}
-      ([^/\{\}\:\-]+)                    # /foo/literal/
+      ([^/\{\}\:\-]+)                      # /foo/literal/
     !
       if( $1 )
       {
@@ -181,23 +181,23 @@ sub _patternize
 # $router->match('/products/all/4/');
 sub match
 {
-  my ($s, $uri, $method) = @_;
+  my ($s, $full_uri, $method) = @_;
   
   $method ||= '*';
   $method = uc($method);
   
-  ($uri) = split /\?/, $uri;
+  my ($uri, $querystring) = split /\?/, $full_uri;
   
-  if( exists( $s->{cache}->{"$method $uri"} ) )
+  if( exists( $s->{cache}->{"$method $full_uri"} ) )
   {
-    if( ref($s->{cache}->{"$method $uri"}) )
+    if( ref($s->{cache}->{"$method $full_uri"}) )
     {
-      return wantarray ? @{ $s->{cache}->{"$method $uri"} } : $s->{cache}->{"$method $uri"};
+      return wantarray ? @{ $s->{cache}->{"$method $full_uri"} } : $s->{cache}->{"$method $full_uri"};
     }
     else
     {
-      return unless defined $s->{cache}->{"$method $uri"};
-      return $s->{cache}->{"$method $uri"};
+      return unless defined $s->{cache}->{"$method $full_uri"};
+      return $s->{cache}->{"$method $full_uri"};
     }# end if()
   }# end if()
   
@@ -207,16 +207,16 @@ sub match
     {
       if( ref($route->{target}) eq 'ARRAY' )
       {
-        $s->{cache}->{"$method $uri"} = [
+        $s->{cache}->{"$method $full_uri"} = [
           map {
-            $s->_prepare_target( $route, $_, @captured )
+            $s->_prepare_target( $route, $_, $querystring, @captured )
           } @{ $route->{target} }
         ];
-        return wantarray ? @{ $s->{cache}->{"$method $uri"} } : $s->{cache}->{"$method $uri"};
+        return wantarray ? @{ $s->{cache}->{"$method $full_uri"} } : $s->{cache}->{"$method $uri"};
       }
       else
       {
-        return $s->{cache}->{"$method $uri"} = $s->_prepare_target( $route, "$route->{target}", @captured );
+        return $s->{cache}->{"$method $full_uri"} = $s->_prepare_target( $route, "$route->{target}", $querystring, @captured );
       }# end if()
     }# end if()
   }# end foreach()
@@ -228,9 +228,10 @@ sub match
 
 sub _prepare_target
 {
-  my ($s, $route, $target, @captured) = @_;
+  my ($s, $route, $target, $querystring, @captured) = @_;
 
-  my $values = { };
+  $querystring = '' unless defined($querystring);
+  my $values = {map { my ($k,$v) = split /\=/, $_; ($k => $v) } split /&/, $querystring};
   
   map {
     my $value = @captured ? shift(@captured) : $route->{defaults}->{$_};
@@ -287,6 +288,27 @@ sub uri_for
   
   return $template;
 }# end uri_for()
+
+
+sub route_for
+{
+  my ($s, $uri, $method) = @_;
+  
+  $method ||= '*';
+  $method = uc($method);
+  
+  ($uri) = split /\?/, $uri;
+  
+  foreach my $route ( grep { $method eq '*' || $_->{method} eq $method || $_->{method} eq '*' } @{$s->{routes}} )
+  {
+    if( my @captured = ($uri =~ $route->{regexp}) )
+    {
+      return $route;
+    }# end if()
+  }# end foreach()
+  
+  return;
+}# end route_for()
 
 
 sub urlencode
@@ -600,6 +622,10 @@ You would get the following results depending on what params you supply:
     flavor  => 'strawberry',
   });
   print $uri;   # /ice-cream/strawberry/
+
+=head2 route_for( $path, [ $method ] )
+
+Returns the route matching the path and method.
 
 =head1 LIMITATIONS
 
