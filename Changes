@@ -1,4 +1,11 @@
 
+2010-03-27    v0.012
+  - Routes with a path like "/foo/:city" and a target like "/bar-[:city:].asp"
+    will now (correctly) produce a uri like "/bar-Dallas.asp?city=Dallas".
+    Before this change, they would be resolved as "/bar-Dallas.asp" (which is sub-optimal).
+  - Updated POD.
+  - Shed a little more light on the route_for($uri [, $method ]) ...er...method.
+
 2010-03-27    v0.011
   - Fixed some bugs related to form variables passed in.
   - Added 'route_for('/path/') method.

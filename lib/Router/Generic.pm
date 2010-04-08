@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.011';
+our $VERSION = '0.012';
 
 sub new
 {
@@ -243,7 +243,9 @@ sub _prepare_target
   map {
     if( $target =~ s/\[\:\Q$_\E\:\]/$values->{$_}/g )
     {
-      delete($values->{$_});
+# If we run into problems of double-param-values (foo=bar&foo=bar) then we'll have
+# to revisit this another way, because simply deleting the params has a negative effect.
+#      delete($values->{$_});
     }# end if()
   } keys %$values;
   
@@ -445,13 +447,13 @@ As of version 0.006 you can also pass an arrayref of targets and get them all ba
   
   # Scalar context returns an arrayref when there are multiple targets:
   my $matches = $router->match('/banks/Dallas/');
-  print $matches->[0];  # /bank-Dallas.asp
-  print $matches->[1];  # /bank-generic.asp
+  print $matches->[0];  # /bank-Dallas.asp?city=Dallas
+  print $matches->[1];  # /bank-generic.asp?city=Dallas
   
   # List context returns a list:
-  my @matches = $router->match('/banks/Dalas/');
-  print $matches[0];    # /bank-Dallas.asp
-  print $matches[1];    # /bank-generic.asp
+  my @matches = $router->match('/banks/Dallas/');
+  print $matches[0];    # /bank-Dallas.asp?city=Dallas
+  print $matches[1];    # /bank-generic.asp?city=Dallas
 
 B<*> This whole contextual-return-types thing started up in v0.007.
 
@@ -477,6 +479,14 @@ B<*> This whole contextual-return-types thing started up in v0.007.
     code => '12345'
   });
   print $uri;   # /zipcodes/12345/
+
+=head2 Get the Route for a URI
+
+  my $route = $router->route_for('/banks/Dallas/');
+  
+  my $route = $router->route_for('/banks/Dallas/', 'POST');
+  
+  my $route = $router->route_for('/banks/Dallas/', 'GET');
 
 =head1 DESCRIPTION
 

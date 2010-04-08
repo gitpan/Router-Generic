@@ -216,10 +216,10 @@ is(
 );
 
 is_deeply
-  [qw( /zipcode-20202.asp /zip-20202.asp )], scalar( $router->match('/zip/20202/banks/') ), "Matched list of targets in scalar context";
+  [qw( /zipcode-20202.asp?code=20202 /zip-20202.asp?code=20202 )], scalar( $router->match('/zip/20202/banks/') ), "Matched list of targets in scalar context";
 
 my @matches = $router->match('/zip/20202/banks/');
-is_deeply [qw( /zipcode-20202.asp /zip-20202.asp )], \@matches, "Matched list of targets in list context";
+is_deeply [qw( /zipcode-20202.asp?code=20202 /zip-20202.asp?code=20202 )], \@matches, "Matched list of targets in list context";
 
 METHODS: {
   my $router = Router::Generic->new();
@@ -266,7 +266,7 @@ METHODS: {
   );
 
   is(
-    $router->match('/main/truck/create/') => '/pages/truck.create.asp',
+    $router->match('/main/truck/create/') => '/pages/truck.create.asp?type=truck',
     "CreatePage is matched properly."
   );
   
@@ -276,7 +276,7 @@ METHODS: {
   );
 
   is(
-    $router->match('/main/truck/create/', 'POST') => '/handlers/dev.truck.create',
+    $router->match('/main/truck/create/', 'POST') => '/handlers/dev.truck.create?type=truck',
     "Create uri matched correctly"
   );
   
@@ -286,7 +286,7 @@ METHODS: {
   );
   
   is(
-    $router->match($view_page) => '/pages/truck.view.asp?id=123',
+    $router->match($view_page) => '/pages/truck.view.asp?id=123&type=truck',
     "View uri matched correctly"
   );
   
@@ -296,7 +296,7 @@ METHODS: {
   );
   
   is(
-    $router->match($list_page) => '/pages/truck.list.asp?page=1',
+    $router->match($list_page) => '/pages/truck.list.asp?page=1&type=truck',
     "List uri matched correctly"
   );
   
@@ -306,7 +306,7 @@ METHODS: {
   );
   
   is(
-    $router->match($delete_page) => '/handlers/dev.truck.delete?id=123',
+    $router->match($delete_page) => '/handlers/dev.truck.delete?id=123&type=truck',
     "Delete uri matched correctly"
   );
   
@@ -360,16 +360,16 @@ MULTI: {
     }
   );
   
-  is( $router->match('/en-us/trucks/') => '/en/us/trucks.asp', "Colon-Colon" );
+  is( $router->match('/en-us/trucks/') => '/en/us/trucks.asp?lang=en&locale=us&page=trucks', "Colon-Colon" );
   is( $router->uri_for('Colon-Colon') => '/en-us/index/', "uri for Colon-Colon" );
   
-  is( $router->match('/wiki/en-us/trucks/') => '/en/us/trucks.asp', "Curly-Curly" );
+  is( $router->match('/wiki/en-us/trucks/') => '/en/us/trucks.asp?lang=en&locale=us&page=trucks', "Curly-Curly" );
   is( $router->uri_for('Curly-Curly') => '/wiki/en-us/index/', "uri for Curly-Curly" );
   
-  is( $router->match('/wikiA/en-us/trucks/') => '/en/us/trucks.asp', "Colon-Curly" );
+  is( $router->match('/wikiA/en-us/trucks/') => '/en/us/trucks.asp?lang=en&locale=us&page=trucks', "Colon-Curly" );
   is( $router->uri_for('Colon-Curly') => '/wikiA/en-us/index/', "uri for Colon-Curly" );
   
-  is( $router->match('/wikiB/en-us/trucks/') => '/en/us/trucks.asp', "Curly-Colon" );
+  is( $router->match('/wikiB/en-us/trucks/') => '/en/us/trucks.asp?lang=en&locale=us&page=trucks', "Curly-Colon" );
   is( $router->uri_for('Curly-Colon') => '/wikiB/en-us/index/', "uri for Curly-Colon" );
 };
 
