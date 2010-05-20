@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.012';
+our $VERSION = '0.013';
 
 sub new
 {
@@ -78,6 +78,16 @@ sub add_route
 
   return 1;
 }# end add_route()
+
+
+sub replace_route
+{
+  my ($s, %args) = @_;
+  
+  $s->add_route( %args )
+    unless eval { $s->uri_for($args{name}) };
+  1;
+}# end replace_route()
 
 
 sub _patternize

@@ -1,4 +1,8 @@
 
+2010-05-20    v0.013
+  - Added `replace_route(%args)` - let's see how we like this.  It's not documented
+    in case it gets removed in a subsequent release.
+
 2010-03-27    v0.012
   - Routes with a path like "/foo/:city" and a target like "/bar-[:city:].asp"
     will now (correctly) produce a uri like "/bar-Dallas.asp?city=Dallas".
