@@ -1,4 +1,8 @@
 
+2010-08-05    v0.014
+  - Calling $router->uri_for(...) with extra parameters not declared in the target
+    will return a url with the extra parameters in the querystring - eg: /path/?foo=bar
+
 2010-05-20    v0.013
   - Added `replace_route(%args)` - let's see how we like this.  It's not documented
     in case it gets removed in a subsequent release.

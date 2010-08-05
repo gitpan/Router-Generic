@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.013';
+our $VERSION = '0.014';
 
 sub new
 {
@@ -288,15 +288,30 @@ sub uri_for
     $args->{$_} = $route->{defaults}->{$_}
       unless defined($args->{$_})
   } keys %{$route->{defaults}};
+  my %used = ( );
   map {
     $template =~ s!
       \[\:$_\:\](\/?)
     !
-      defined($args->{$_}) && length($args->{$_})
-        ? "$args->{$_}$1"
-        : ""
+      if( defined($args->{$_}) && length($args->{$_}) )
+      {
+        $used{$_}++;
+        "$args->{$_}$1"
+      }
+      else
+      {
+        "";
+      }# end if()
     !egx
   } @{ $route->{captures} };
+  
+  my $params = join '&', map { urlencode($_) . '=' . urlencode($args->{$_}) }
+    grep { defined($args->{$_}) && length($args->{$_}) && ! $used{$_} }
+      keys %$args;
+  if( length($params) )
+  {
+    $template .= $template =~ m/\?/ ? "&$params" : "?$params";
+  }# end if()
   
   return $template;
 }# end uri_for()
