@@ -169,5 +169,18 @@ BLANK_DEFAULTS: {
 };
 
 
+FILE_MASKING: {
+  my $router = Router::Generic->new();
+  
+  $router->add_route(
+    name    => "FileMask",
+    path    => "/foo/bar.asp",
+    target  => "/bar/baz.asp",
+    method  => "*"
+  );
+  
+  is( $router->uri_for("FileMask") => '/foo/bar.asp' );
+};
+
 
 

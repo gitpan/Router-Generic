@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.014';
+our $VERSION = '0.015';
 
 sub new
 {
@@ -139,8 +139,11 @@ sub _patternize
     !sgxe;
     
     # Make the trailing '/' optional:
-    $copy .= '/' unless $copy =~ m/\/$/;
-    $copy =~ s{\/$}{\/?};
+    unless( $copy =~ m{\/[^/]+\.[^/]+$} )
+    {
+      $copy .= '/' unless $copy =~ m/\/$/;
+      $copy =~ s{\/$}{\/?};
+    }# end unless()
     qr{^$copy$};
   };
   
@@ -180,7 +183,14 @@ sub _patternize
       }# end if()
     !sgxe;
     
-    $copy .= '/' unless $copy =~ m/\/$/;
+#    $copy .= '/' unless $copy =~ m/\/$/;
+    unless( $copy =~ m{\/[^/]+\.[^/]+$} )
+    {
+      $copy .= '/' unless $copy =~ m/\/$/;
+      $copy =~ s{\/$}{\/?};
+      $copy =~ s/\?$//;
+    }# end unless()
+
     $copy;
   };
   
