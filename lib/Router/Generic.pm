@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.015';
+our $VERSION = '0.016';
 
 sub new
 {
@@ -251,6 +251,7 @@ sub _prepare_target
   my ($s, $route, $target, $querystring, @captured) = @_;
 
   $querystring = '' unless defined($querystring);
+  no warnings 'uninitialized';
   my $values = {map { my ($k,$v) = split /\=/, $_; ($k => $v) } split /&/, $querystring};
   
   map {

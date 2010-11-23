@@ -1,4 +1,8 @@
 
+2010-11-23    v0.015
+  - Fixes the following warning:
+    "Use of uninitialized value in anonymous hash ({}) at /usr/local/share/perl/5.10.0/Router/Generic.pm line 254"
+
 2010-11-13    v0.015
   - Routes with paths like /foo/bar.asp will now no longer auto-map to /foo/bar.asp/
     (no trailing "/" will be appended).
