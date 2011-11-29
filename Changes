@@ -1,4 +1,10 @@
 
+Change log for Perl module Router::Generic:
+
+2011-11-29    v0.018
+  - Removed some errant POD.
+
+
 2011-11-28    v0.017
   - Default values (from the 'defaults' param) will always be added to the 'match' output
     unless they exist in the querystring input.

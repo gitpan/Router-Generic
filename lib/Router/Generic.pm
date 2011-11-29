@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.017';
+our $VERSION = '0.018';
 
 sub new
 {
@@ -285,22 +285,6 @@ sub _prepare_target
     return $target . ($params ? "?$params" : "" );
   }# end if()
 }# end _prepare_target()
-
-=pod
-
-
-  my $form_params = join '&', grep { $_ } map {
-    urlencode($_) . '=' . urlencode($values->{$_})
-      if defined($values->{$_});
-  } grep { defined($values->{$_}) } sort {lc($a) cmp lc($b)} keys %$values;
-  my $defaults = $route->{defaults};
-  my $default_params = join '&', map {
-    urlencode($_) . '=' . urlencode($defaults->{$_})
-      if defined($defaults->{$_});
-  } grep { defined($defaults->{$_}) } sort {lc($a) cmp lc($b)} keys %$defaults;
-  my $params = join '&', ( grep { $_ } $form_params, $default_params );
-
-=cut
 
 
 # $router->uri_for('Zipcodes', { zip => 90210 }) # eg: /Zipcodes/90201/
