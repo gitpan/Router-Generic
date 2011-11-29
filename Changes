@@ -1,5 +1,9 @@
 
-2010-11-23    v0.015
+2011-11-28    v0.017
+  - Default values (from the 'defaults' param) will always be added to the 'match' output
+    unless they exist in the querystring input.
+
+2010-11-23    v0.016
   - Fixes the following warning:
     "Use of uninitialized value in anonymous hash ({}) at /usr/local/share/perl/5.10.0/Router/Generic.pm line 254"
 

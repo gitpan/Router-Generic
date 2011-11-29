@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.016';
+our $VERSION = '0.017';
 
 sub new
 {
@@ -183,7 +183,6 @@ sub _patternize
       }# end if()
     !sgxe;
     
-#    $copy .= '/' unless $copy =~ m/\/$/;
     unless( $copy =~ m{\/[^/]+\.[^/]+$} )
     {
       $copy .= '/' unless $copy =~ m/\/$/;
@@ -254,26 +253,28 @@ sub _prepare_target
   no warnings 'uninitialized';
   my $values = {map { my ($k,$v) = split /\=/, $_; ($k => $v) } split /&/, $querystring};
   
+  my %defaults = %{ $route->{defaults} };
   map {
-    my $value = @captured ? shift(@captured) : $route->{defaults}->{$_};
+    my $value = @captured ? shift(@captured) : $defaults{$_};
     $value =~ s/\/$//;
-    $value = $route->{defaults}->{$_} unless length($value);
+    $value = $defaults{$_} unless length($value);
     $values->{$_} = $value;
+    delete($defaults{$_}) if exists $defaults{$_};
   } @{$route->{captures}};
   
-  map {
-    if( $target =~ s/\[\:\Q$_\E\:\]/$values->{$_}/g )
-    {
-# If we run into problems of double-param-values (foo=bar&foo=bar) then we'll have
-# to revisit this another way, because simply deleting the params has a negative effect.
-#      delete($values->{$_});
-    }# end if()
-  } keys %$values;
-  
-  my $params = join '&', grep { $_ } map {
+  map { $target =~ s/\[\:\Q$_\E\:\]/$values->{$_}/g } keys %$values;
+
+  my %skip = ( );
+  my $form_params = join '&', grep { $_ } map {
+    $skip{$_}++;
     urlencode($_) . '=' . urlencode($values->{$_})
       if defined($values->{$_});
   } grep { defined($values->{$_}) } sort {lc($a) cmp lc($b)} keys %$values;
+  my $default_params = join '&', map {
+    urlencode($_) . '=' . urlencode($defaults{$_})
+      if defined($defaults{$_});
+  } grep { defined($defaults{$_}) && ! $skip{$_} } sort {lc($a) cmp lc($b)} keys %defaults;
+  my $params = join '&', ( grep { $_ } $form_params, $default_params );
   
   if( $target =~ m/\?/ )
   {
@@ -284,6 +285,22 @@ sub _prepare_target
     return $target . ($params ? "?$params" : "" );
   }# end if()
 }# end _prepare_target()
+
+=pod
+
+
+  my $form_params = join '&', grep { $_ } map {
+    urlencode($_) . '=' . urlencode($values->{$_})
+      if defined($values->{$_});
+  } grep { defined($values->{$_}) } sort {lc($a) cmp lc($b)} keys %$values;
+  my $defaults = $route->{defaults};
+  my $default_params = join '&', map {
+    urlencode($_) . '=' . urlencode($defaults->{$_})
+      if defined($defaults->{$_});
+  } grep { defined($defaults->{$_}) } sort {lc($a) cmp lc($b)} keys %$defaults;
+  my $params = join '&', ( grep { $_ } $form_params, $default_params );
+
+=cut
 
 
 # $router->uri_for('Zipcodes', { zip => 90210 }) # eg: /Zipcodes/90201/
@@ -619,6 +636,24 @@ The C<defaults> are overridden simply by supplying a value:
 And this:
 
   $router->uri_for('Pets', {petName => 'Sparky'});  # /pets/Sparky/
+
+Similarly, if you have the following route:
+
+  $router->add_route(
+    name  => "DefaultsAlways",
+    path  => "/",
+    target  => "/index.asp",
+    method  => "*",
+    defaults  => {
+      foo => "bar"
+    }
+  );
+
+You get this:
+
+  $router->uri_for("DefaultsAlways"); # /?foo=bar
+
+  $router->match('/');  # /index.asp?foo=bar
 
 =back
 

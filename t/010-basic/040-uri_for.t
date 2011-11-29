@@ -183,4 +183,36 @@ FILE_MASKING: {
 };
 
 
+DEFAULTS_ALWAYS: {
+  my $router = Router::Generic->new();
+  
+  $router->add_route(
+    name  => "DefaultsAlways",
+    path  => "/",
+    target  => "/index.asp",
+    method  => "*",
+    defaults  => {
+      foo => "bar"
+    }
+  );
+  
+  $router->add_route(
+    name  => "DefaultsAlways2",
+    path  => "/baz",
+    target  => "/baz.asp",
+    method  => "*",
+    defaults  => {
+      foo => "bar"
+    }
+  );
+  
+  is( $router->uri_for("DefaultsAlways") => '/?foo=bar' );
+  is( $router->match('/') => '/index.asp?foo=bar' );
+  is( $router->uri_for("DefaultsAlways2") => '/baz/?foo=bar' );
+  is( $router->match('/baz/') => '/baz.asp?foo=bar' );
+  
+  is( $router->match('/?foo=bux') => '/index.asp?foo=bux' );
+};
+
+
 
