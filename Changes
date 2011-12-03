@@ -1,9 +1,12 @@
 
 Change log for Perl module Router::Generic:
 
+2011-12-02    v0.019
+  - Added some tests to validate the behavior of splat captures in routes.
+  - Splat captures are like "/{*display}".
+
 2011-11-29    v0.018
   - Removed some errant POD.
-
 
 2011-11-28    v0.017
   - Default values (from the 'defaults' param) will always be added to the 'match' output

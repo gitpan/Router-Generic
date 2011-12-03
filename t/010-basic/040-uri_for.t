@@ -206,12 +206,41 @@ DEFAULTS_ALWAYS: {
     }
   );
   
+  $router->add_route(
+    name  => "WithSplat",
+    path  => "/splat/{*display}",
+    target  => "/foo.asp",
+    method  => "*",
+    defaults  => {
+      "display" => "project"
+    }
+  );
+  
+  # Calling /splat/blah/blarg/ will not return '/foo.asp?display=blah&more=blarg'
+  # because the 'WithSplat' route's {*display} preempts anything after it.
+  # In fact we won't even hit this route, because it will be using the WithSplat
+  # route instead.
+  $router->add_route(
+    name  => "WithSplatPlus",
+    path  => "/splat/{*display}/:more",
+    target  => "/foo2.asp",
+    method  => "*",
+    defaults  => {
+      "display" => "splat",
+      "more"    => "even-more"
+    }
+  );
+  
   is( $router->uri_for("DefaultsAlways") => '/?foo=bar' );
   is( $router->match('/') => '/index.asp?foo=bar' );
   is( $router->uri_for("DefaultsAlways2") => '/baz/?foo=bar' );
   is( $router->match('/baz/') => '/baz.asp?foo=bar' );
   
   is( $router->match('/?foo=bux') => '/index.asp?foo=bux' );
+  
+  is( $router->match('/splat/') => '/foo.asp?display=project' );
+  
+  is( $router->match('/splat/blah/blarg/') => '/foo.asp?display=blah%2Fblarg');
 };
 
 
