@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.019';
+our $VERSION = '0.020';
 
 sub new
 {
@@ -336,7 +336,8 @@ sub route_for
   $method ||= '*';
   $method = uc($method);
   
-  ($uri) = split /\?/, $uri;
+  ($uri) = split /\?/, $uri
+    or return;
   
   foreach my $route ( grep { $method eq '*' || $_->{method} eq $method || $_->{method} eq '*' } @{$s->{routes}} )
   {

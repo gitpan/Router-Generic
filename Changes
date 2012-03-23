@@ -1,6 +1,11 @@
 
 Change log for Perl module Router::Generic:
 
+2012-03-23    v0.020
+  - In route_for($uri [, $method ]) if we get no $uri then we just bail out.
+  - This removes annoying "uninitialized value" warnings without introducing
+    odd behavior.
+
 2011-12-02    v0.019
   - Added some tests to validate the behavior of splat captures in routes.
   - Splat captures are like "/{*display}".
