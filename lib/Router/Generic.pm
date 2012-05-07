@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 
-our $VERSION = '0.020';
+our $VERSION = '0.021';
 
 sub new
 {
@@ -367,6 +367,10 @@ sub urlencode
 =head1 NAME
 
 Router::Generic - A general-purpose router for the web.
+
+=head1 DEPRECATED
+
+Do not use for new code.
 
 =head1 SYNOPSIS
 

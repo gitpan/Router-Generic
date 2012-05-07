@@ -1,6 +1,9 @@
 
 Change log for Perl module Router::Generic:
 
+2012-05-07    v0.021
+  - DEPRECATED do not use for new code.
+
 2012-03-23    v0.020
   - In route_for($uri [, $method ]) if we get no $uri then we just bail out.
   - This removes annoying "uninitialized value" warnings without introducing
